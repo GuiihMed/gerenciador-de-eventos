@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// NextAuth Required Models
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime        @default(now())
+  lastLoginAt   DateTime?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Custom MESTRE relation
+  tenantUsers   TenantUser[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+ 
+  @@unique([identifier, token])
+}
+
+// ----------------------------------------------------------------------
+// MESTRE - CORE DOMAIN (Multi-Tenant & Event Engine)
+// ----------------------------------------------------------------------
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  domain      String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  themeConfig String?  // Changed from Json for SQLite
+
+  users       TenantUser[]
+  events      Event[]
+  taxonomies  Taxonomy[]
+  speakers    Speaker[]
+}
+
+model TenantUser {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      String   @default("EDITOR") // Changed from Enum for SQLite
+  isActive  Boolean  @default(true)
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+}
+
+model Event {
+  id             String   @id @default(uuid())
+  tenantId       String
+  name           String
+  startDate      DateTime
+  endDate        DateTime
+  location       String?
+  visualIdentity String? // Changed from Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  days           ScheduleDay[]
+  speakers       EventSpeaker[]
+  attendees      Attendee[]
+}
+
+model ScheduleDay {
+  id        String   @id @default(uuid())
+  eventId   String
+  date      DateTime
+  label     String?
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  blocks    TimeBlock[]
+}
+
+model TimeBlock {
+  id            String   @id @default(uuid())
+  scheduleDayId String
+  startTime     String   // "HH:mm"
+  endTime       String   // "HH:mm"
+
+  day           ScheduleDay @relation(fields: [scheduleDayId], references: [id], onDelete: Cascade)
+  activities    Activity[]
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  timeBlockId String
+  title       String
+  description String?
+  startTime   String   // "HH:mm"
+  endTime     String   // "HH:mm"
+  capacity    Int?
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED, CANCELLED
+  isHighlight Boolean  @default(false)
+
+  block       TimeBlock @relation(fields: [timeBlockId], references: [id], onDelete: Cascade)
+  taxonomies  ActivityTaxonomy[]
+  speakers    ActivitySpeaker[]
+  feedbacks   ActivityFeedback[]
+}
+
+model ActivityFeedback {
+  id          String   @id @default(uuid())
+  activityId  String
+  rating      Int      // 1 a 5 estrelas
+  comment     String?
+  authorName  String?
+  createdAt   DateTime @default(now())
+
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+}
+
+model Taxonomy {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String   // e.g. "Trilhas", "Formatos", "Locais"
+  type      String   // e.g. "track", "format", "room"
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  values    TaxonomyValue[]
+
+  @@unique([tenantId, type])
+}
+
+model TaxonomyValue {
+  id          String   @id @default(uuid())
+  taxonomyId  String
+  label       String   
+  metadata    String?  // Changed from Json
+
+  taxonomy    Taxonomy @relation(fields: [taxonomyId], references: [id], onDelete: Cascade)
+  activities  ActivityTaxonomy[]
+}
+
+model ActivityTaxonomy {
+  id              String   @id @default(uuid())
+  activityId      String
+  taxonomyValueId String
+
+  activity        Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  taxonomyValue   TaxonomyValue @relation(fields: [taxonomyValueId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, taxonomyValueId])
+}
+
+model Speaker {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  email     String?
+  bio       String?
+  company   String?
+  role      String?
+  avatarUrl String?
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  events     EventSpeaker[]
+  activities ActivitySpeaker[]
+}
+
+model EventSpeaker {
+  eventId   String
+  speakerId String
+  isFeatured Boolean @default(false)
+
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speaker   Speaker @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, speakerId])
+}
+
+model ActivitySpeaker {
+  activityId String
+  speakerId  String
+
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  speaker    Speaker  @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, speakerId])
+}
+
+model Attendee {
+  id          String   @id @default(uuid())
+  eventId     String
+  name        String
+  email       String
+  phone       String?
+  company     String?
+  role        String?
+  ticketType  String   @default("STANDARD") // STANDARD, VIP, SPEAKER, PRESS
+  qrCodeToken String   @default(uuid())
+  isCheckedIn Boolean  @default(false)
+  checkedInAt DateTime?
+  createdAt   DateTime @default(now())
+
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, email])
+}

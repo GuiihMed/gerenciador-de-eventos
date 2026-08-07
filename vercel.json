@@ -1,0 +1,5 @@
+{
+  "name": "guiihub-events",
+  "framework": "nextjs",
+  "buildCommand": "prisma generate && next build"
+}
