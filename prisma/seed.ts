@@ -42,11 +42,11 @@ async function main() {
   })
 
   // 4. Criar os Palestrantes/Coordenadores (Baseado na Imagem)
-  const franco = await prisma.speaker.create({ data: { name: 'Franco Costa', role: 'Coordenação' } })
-  const fernanda = await prisma.speaker.create({ data: { name: 'Fernanda Karolina', role: 'Coordenação' } })
-  const laercia = await prisma.speaker.create({ data: { name: 'Laércia Martins', role: 'Coordenação' } })
-  const viviane = await prisma.speaker.create({ data: { name: 'Viviane Gusmão', role: 'Coordenação' } })
-  const giane = await prisma.speaker.create({ data: { name: 'Giane Araújo', role: 'Coordenação' } })
+  const franco = await prisma.speaker.create({ data: { tenantId: tenant.id, name: 'Franco Costa', role: 'Coordenação' } })
+  const fernanda = await prisma.speaker.create({ data: { tenantId: tenant.id, name: 'Fernanda Karolina', role: 'Coordenação' } })
+  const laercia = await prisma.speaker.create({ data: { tenantId: tenant.id, name: 'Laércia Martins', role: 'Coordenação' } })
+  const viviane = await prisma.speaker.create({ data: { tenantId: tenant.id, name: 'Viviane Gusmão', role: 'Coordenação' } })
+  const giane = await prisma.speaker.create({ data: { tenantId: tenant.id, name: 'Giane Araújo', role: 'Coordenação' } })
 
   // 5. Criar Dia da Agenda
   const day1 = await prisma.scheduleDay.create({

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "super-secret-key-for-mestre-app",
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -24,11 +26,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         if (!isValid) return null;
 
-        // Atualizar last login async
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() }
-        });
+        // Atualizar last login de forma segura (sem quebrar caso o DB seja read-only na Vercel)
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          });
+        } catch (err) {
+          console.warn("Aviso: Não foi possível atualizar lastLoginAt (DB read-only na Vercel):", err);
+        }
 
         return {
           id: user.id,
