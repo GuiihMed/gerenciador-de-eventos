@@ -1,22 +1,9 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
 import { sendRegistrationConfirmationEmail } from "@/server/actions/email"
-
-async function getUserTenantId() {
-  const session = await auth()
-  if (!session?.user?.id) throw new Error("Não autorizado")
-
-  const tenantUser = await prisma.tenantUser.findFirst({
-    where: { userId: session.user.id },
-    select: { tenantId: true }
-  })
-
-  if (!tenantUser) throw new Error("Usuário não pertence a nenhum tenant")
-  return tenantUser.tenantId
-}
+import { getUserTenantId } from "@/lib/tenant-helper"
 
 // 1. Importação de Palestrantes
 export async function importSpeakersCSV(rows: Array<{
