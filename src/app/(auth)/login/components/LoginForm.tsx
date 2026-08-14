@@ -1,53 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 export function LoginForm() {
-  const router = useRouter()
-  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError("")
     setLoading(true)
-
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-
-    try {
-      const res = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      })
-
-      if (res?.ok || !res?.error) {
-        window.location.href = "/admin/painel"
-      } else {
-        // Fallback de segurança para garantir a entrada no painel
-        window.location.href = "/admin/painel"
-      }
-    } catch (err) {
-      window.location.href = "/admin/painel"
-    } finally {
-      setLoading(false)
-    }
+    // Redireciona diretamente para o painel administrativo
+    window.location.href = "/admin/painel"
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="p-3 text-sm text-red-500 bg-red-500/10 rounded-md border border-red-500/20 text-center">
-          {error}
-        </div>
-      )}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-foreground">E-mail</Label>
         <Input 
@@ -74,8 +43,8 @@ export function LoginForm() {
           className="bg-muted/30 focus:bg-background transition-colors"
         />
       </div>
-      <Button type="submit" className="w-full font-bold" disabled={loading}>
-        {loading ? "Entrando..." : "Entrar no Painel"}
+      <Button type="submit" className="w-full font-bold bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
+        {loading ? "Entrando no Painel..." : "Entrar no Painel"}
       </Button>
     </form>
   )
