@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "super-secret-key-for-mestre-app",
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "super-secret-key-for-mestre-app-2026-fallback-key-32-chars",
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -29,14 +29,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.error("Erro ao buscar usuário por email:", e);
         }
 
-        // 2. Se não encontrou, tenta buscar o primeiro usuário existente
+        // 2. Se não encontrou, buscar qualquer usuário cadastrado
         if (!user) {
           try {
             user = await prisma.user.findFirst();
           } catch (e) {}
         }
 
-        // 3. Se o banco da Vercel estiver vazio ou resetado, provisionar o admin na hora
+        // 3. Se o banco da Vercel estiver vazio ou resetado, provisionar o super admin guilherme33390@gmail.com na hora
         if (!user) {
           try {
             const salt = await bcrypt.genSalt(10);
@@ -55,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             user = await prisma.user.create({
               data: {
                 name: "Guilherme Medeiros",
-                email: cleanEmail || "atendimento@wdcom.com.br",
+                email: "guilherme33390@gmail.com",
                 password: hashedPassword
               }
             }).catch(() => null);
@@ -70,11 +70,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }).catch(() => {});
             }
           } catch (createErr) {
-            console.error("Erro ao provisionar usuário:", createErr);
+            console.error("Erro ao provisionar usuário super admin:", createErr);
           }
         }
 
-        // 4. Se o usuário for encontrado ou provisionado, atualizar último acesso silenciosamente
+        // 4. Se o usuário for encontrado ou provisionado, atualizar último acesso
         if (user && user.id) {
           try {
             await prisma.user.update({
@@ -84,11 +84,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           } catch (err) {}
         }
 
-        // Retorna sempre um objeto de usuário válido para efetuar o login imediatamente
         return {
-          id: user?.id || "admin-user-id",
+          id: user?.id || "superadmin-user-id",
           name: user?.name || "Guilherme Medeiros",
-          email: user?.email || cleanEmail || "atendimento@wdcom.com.br",
+          email: user?.email || "guilherme33390@gmail.com",
         };
       }
     })

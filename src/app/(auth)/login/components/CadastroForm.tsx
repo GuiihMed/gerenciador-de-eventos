@@ -36,7 +36,7 @@ export function CadastroForm() {
           name="email" 
           type="email" 
           placeholder="seu@email.com" 
-          defaultValue="atendimento@wdcom.com.br"
+          defaultValue="guilherme33390@gmail.com"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
         />
@@ -48,7 +48,7 @@ export function CadastroForm() {
           name="tenantName" 
           type="text" 
           placeholder="Ex: Minha Agência" 
-          defaultValue="WDCOM Eventos"
+          defaultValue="MedAcademy Eventos"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
         />

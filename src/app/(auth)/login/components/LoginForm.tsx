@@ -24,7 +24,7 @@ export function LoginForm() {
           name="email" 
           type="email" 
           placeholder="seu@email.com" 
-          defaultValue="atendimento@wdcom.com.br"
+          defaultValue="guilherme33390@gmail.com"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
         />
