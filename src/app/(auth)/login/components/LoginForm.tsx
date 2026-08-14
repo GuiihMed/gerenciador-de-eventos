@@ -4,26 +4,20 @@ import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { performLoginAction } from "@/server/actions/auth"
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    // Redireciona diretamente para o painel administrativo
-    window.location.href = "/admin/painel"
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={performLoginAction} onSubmit={() => setLoading(true)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-foreground">E-mail</Label>
+        <Label htmlFor="email" className="text-foreground">E-mail de Acesso</Label>
         <Input 
           id="email" 
           name="email" 
           type="email" 
-          placeholder="seu@email.com" 
+          placeholder="guilherme33390@gmail.com" 
           defaultValue="guilherme33390@gmail.com"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
@@ -43,8 +37,8 @@ export function LoginForm() {
           className="bg-muted/30 focus:bg-background transition-colors"
         />
       </div>
-      <Button type="submit" className="w-full font-bold bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-        {loading ? "Entrando no Painel..." : "Entrar no Painel"}
+      <Button type="submit" className="w-full font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20" disabled={loading}>
+        {loading ? "Entrando no Painel..." : "Entrar no Painel Super Admin"}
       </Button>
     </form>
   )

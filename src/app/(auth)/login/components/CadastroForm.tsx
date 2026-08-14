@@ -4,26 +4,20 @@ import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { performRegisterAction } from "@/server/actions/auth"
 
 export function CadastroForm() {
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    // Redireciona diretamente para o painel administrativo
-    window.location.href = "/admin/painel"
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={performRegisterAction} onSubmit={() => setLoading(true)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="name" className="text-foreground">Seu Nome</Label>
         <Input 
           id="name" 
           name="name" 
           type="text" 
-          placeholder="Ex: João Silva" 
+          placeholder="Ex: Guilherme Medeiros" 
           defaultValue="Guilherme Medeiros"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
@@ -47,7 +41,7 @@ export function CadastroForm() {
           id="tenantName" 
           name="tenantName" 
           type="text" 
-          placeholder="Ex: Minha Agência" 
+          placeholder="Ex: MedAcademy Eventos" 
           defaultValue="MedAcademy Eventos"
           required 
           className="bg-muted/30 focus:bg-background transition-colors"
@@ -64,7 +58,7 @@ export function CadastroForm() {
           className="bg-muted/30 focus:bg-background transition-colors"
         />
       </div>
-      <Button type="submit" className="w-full font-bold mt-2" disabled={loading}>
+      <Button type="submit" className="w-full font-bold bg-primary text-primary-foreground hover:bg-primary/90 mt-2" disabled={loading}>
         {loading ? "Criando Conta..." : "Criar Conta Grátis"}
       </Button>
     </form>
