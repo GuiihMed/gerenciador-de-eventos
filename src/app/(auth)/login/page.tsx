@@ -1,5 +1,5 @@
-import { AuthScreen } from "./components/AuthScreen"
+import { redirect } from "next/navigation";
 
 export default function LoginPage() {
-  return <AuthScreen />
+  redirect("/admin/painel");
 }
